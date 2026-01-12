@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - نظام المراقبة المتقدم</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-purple: #9d00ff;
+            --neon-green: #00ff9d;
+            --neon-pink: #ff00ff;
+            --neon-cyan: #00ffff;
+            --neon-yellow: #ffff00;
+            --neon-red: #ff0055;
+            --neon-orange: #ff9900;
+            --bg-dark: #0a0a1a;
+            --bg-darker: #050510;
+            --bg-card: rgba(10, 20, 40, 0.85);
+            --bg-sidebar: rgba(5, 10, 25, 0.95);
+            --text-primary: #ffffff;
+            --text-secondary: #b0b0ff;
+            --glow-blue: 0 0 15px var(--neon-blue);
+            --glow-purple: 0 0 15px var(--neon-purple);
+            --glow-green: 0 0 15px var(--neon-green);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(0, 243, 255, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(157, 0, 255, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 40% 80%, rgba(0, 255, 157, 0.05) 0%, transparent 50%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* القائمة الجانبية - على اليسار */
+        .sidebar {
+            width: 260px;
+            background: var(--bg-sidebar);
+            backdrop-filter: blur(15px);
+            border-right: 1px solid rgba(0, 243, 255, 0.3);
+            box-shadow: 5px 0 30px rgba(0, 243, 255, 0.2);
+            position: fixed;
+            left: 0; /* تغيير من right إلى left */
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+            transition: var(--transition);
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: rgba(0, 243, 255, 0.1);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: var(--neon-blue);
+            border-radius: 10px;
+        }
+
+        .sidebar-header {
+            padding: 25px 20px;
+            border-bottom: 1px solid rgba(0, 243, 255, 0.2);
+            text-align: center;
+        }
+
+        .sidebar-logo {
+            font-size: 28px;
+            color: var(--neon-cyan);
+            text-shadow: var(--glow-blue);
+            animation: pulse 2s infinite;
+        }
+
+        .sidebar-title {
+            font-size: 20px;
+            font-weight: 800;
+            margin-top: 10px;
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .sidebar-menu {
+            padding: 20px 0;
+            list-style: none;
+        }
+
+        .menu-item {
+            margin: 5px 15px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px;
+            transition: var(--transition);
+        }
+
+        .menu-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%; /* تغيير من right إلى left */
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .menu-item:hover::before {
+            left: 100%; /* تغيير من right إلى left */
+        }
+
+        .menu-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px;
+            color: var(--text-primary);
+            text-decoration: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid transparent;
+            transition: var(--transition);
+        }
+
+        .menu-link:hover {
+            transform: translateX(10px); /* تغيير من -10px إلى 10px */
+            border-color: var(--neon-blue);
+            box-shadow: var(--glow-blue);
+            background: rgba(0, 243, 255, 0.1);
+        }
+
+        .menu-link.active {
+            border-color: var(--neon-green);
+            box-shadow: var(--glow-green);
+            background: rgba(0, 255, 157, 0.15);
+        }
+
+        .menu-icon {
+            font-size: 18px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+
+        /* المحتوى الرئيسي - بمسافة من القائمة */
+        .main-content {
+            flex: 1;
+            margin-right: 280px; /* مسافة من القائمة الجانبية */
+            margin-left: 0; /* إزالة الهوامش اليسرى */
+            padding: 30px 40px; /* زيادة المسافات الداخلية */
+            min-height: 100vh;
+            max-width: 1400px; /* تحديد عرض أقصى */
+            margin: 0 auto; /* توسيط المحتوى */
+            padding-left: 300px; /* إضافة مسافة من اليسار للقائمة */
+            padding-right: 40px; /* زيادة المسافة اليمنى */
+        }
+
+        /* الهيدر العلوي - توسيعه */
+        .top-header {
+            background: rgba(5, 10, 25, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--neon-blue);
+            box-shadow: var(--glow-blue);
+            padding: 20px 40px; /* زيادة المسافات الداخلية */
+            border-radius: 15px; /* زيادة نصف قطر الزوايا */
+            margin-bottom: 40px; /* زيادة المسافة السفلية */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            max-width: 1200px; /* تحديد عرض أقصى */
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .page-title h1 {
+            font-size: 28px; /* زيادة حجم الخط */
+            font-weight: 800;
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .page-title p {
+            color: var(--text-secondary);
+            font-size: 16px; /* زيادة حجم الخط */
+            margin-top: 8px;
+        }
+
+        /* إحصائيات سريعة - توسيع المسافات */
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); /* زيادة العرض الأدنى */
+            gap: 30px; /* زيادة المسافة بين العناصر */
+            margin-bottom: 50px; /* زيادة المسافة السفلية */
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: 18px; /* زيادة نصف قطر الزوايا */
+            padding: 25px; /* زيادة المسافات الداخلية */
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px); /* زيادة تأثير الرفع */
+            border-color: var(--neon-purple);
+            box-shadow: var(--glow-purple);
+        }
+
+        .stat-icon {
+            font-size: 36px; /* زيادة حجم الأيقونة */
+            margin-bottom: 15px; /* زيادة المسافة السفلية */
+            display: block;
+        }
+
+        .stat-number {
+            font-size: 32px; /* زيادة حجم الرقم */
+            font-weight: 800;
+            margin: 15px 0; /* زيادة المسافات */
+            text-shadow: 0 0 10px currentColor;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 14px; /* زيادة حجم الخط */
+        }
+
+        /* قسم البيانات - توسيع المسافات */
+        .data-section {
+            background: var(--bg-card);
+            border-radius: 18px; /* زيادة نصف قطر الزوايا */
+            padding: 30px; /* زيادة المسافات الداخلية */
+            margin-bottom: 40px; /* زيادة المسافة السفلية */
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            position: relative;
+            overflow: hidden;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .data-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(0, 243, 255, 0.05), transparent);
+            transform: rotate(45deg);
+            animation: shine 6s infinite linear;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px; /* زيادة المسافة السفلية */
+            position: relative;
+        }
+
+        .section-title {
+            font-size: 22px; /* زيادة حجم الخط */
+            font-weight: 700;
+            color: var(--neon-cyan);
+            display: flex;
+            align-items: center;
+            gap: 12px; /* زيادة المسافة بين الأيقونة والنص */
+        }
+
+        /* تحسينات الجدول */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            position: relative;
+        }
+
+        .data-table th {
+            background: rgba(0, 243, 255, 0.1);
+            color: var(--neon-cyan);
+            padding: 18px; /* زيادة المسافات الداخلية */
+            text-align: right;
+            border-bottom: 2px solid var(--neon-blue);
+            font-weight: 600;
+            font-size: 15px; /* زيادة حجم الخط */
+        }
+
+        .data-table td {
+            padding: 16px; /* زيادة المسافات الداخلية */
+            border-bottom: 1px solid rgba(0, 243, 255, 0.1);
+            color: var(--text-secondary);
+            font-size: 14px; /* زيادة حجم الخط */
+        }
+
+        .data-table tr:hover {
+            background: rgba(0, 243, 255, 0.05);
+        }
+
+        /* تحسينات الأزرار */
+        .action-btn {
+            padding: 8px 16px; /* زيادة المسافات الداخلية */
+            border-radius: 8px; /* زيادة نصف قطر الزوايا */
+            border: 1px solid;
+            background: transparent;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 13px; /* زيادة حجم الخط */
+            margin: 0 5px; /* زيادة المسافات الأفقية */
+        }
+
+        /* زر التبديل للقائمة الجانبية */
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px; /* تغيير من right إلى left */
+            z-index: 1100;
+            background: rgba(5, 10, 25, 0.9);
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-cyan);
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: var(--glow-blue);
+        }
+
+        /* الأنيميشن */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        @keyframes shine {
+            0% { transform: rotate(45deg) translateX(-100%); }
+            100% { transform: rotate(45deg) translateX(100%); }
+        }
+
+        /* تحسينات للجوال */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%); /* تغيير من 100% إلى -100% */
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-right: 0;
+                padding-left: 40px;
+                padding-right: 40px;
+            }
+            
+            .menu-toggle {
+                display: flex;
+                left: 20px; /* تغيير من right إلى left */
+            }
+        }
+
+        @media (max-width: 768px) {
+            .quick-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .top-header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+                padding: 15px;
+            }
+            
+            .data-table {
+                display: block;
+                overflow-x: auto;
+            }
+            
+            .main-content {
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .quick-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                width: 100%;
+            }
+            
+            .menu-text {
+                font-size: 13px;
+            }
+        }
+
+        /* Login Modal Styles */
+        .login-modal-backdrop {
+            display: flex;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(10, 10, 26, 0.9);
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(8px);
+        }
+
+        .login-modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--neon-blue);
+            box-shadow: var(--glow-blue);
+            border-radius: 18px;
+            width: 90%;
+            max-width: 400px;
+            padding: 40px;
+            text-align: center;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .login-modal-content h3 {
+            font-size: 24px;
+            color: var(--neon-cyan);
+            margin-bottom: 30px;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 20px;
+            background: rgba(0, 243, 255, 0.05);
+            border: 1px solid var(--neon-blue);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-family: 'Tajawal', sans-serif;
+            font-size: 16px;
+        }
+
+        .login-input::placeholder {
+            color: var(--text-secondary);
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            background: var(--neon-blue);
+            color: var(--bg-dark);
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: var(--transition);
+            text-shadow: 0 0 5px rgba(0,0,0,0.3);
+        }
+        .login-button:hover {
+            box-shadow: var(--glow-blue);
+        }
+
+        /* Sub-menu styles */
+        .sub-menu {
+            display: none;
+            list-style: none;
+            padding: 5px 0;
+            margin: 5px 0 5px 20px; /* Indent sub-menu */
+            background: rgba(0, 243, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .menu-item.active .sub-menu {
+            display: block;
+        }
+        
+        .arrow-icon {
+            margin-left: auto;
+            transition: transform 0.3s ease;
+        }
+
+        .menu-item.active .arrow-icon {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Modal -->
+    <div id="login-modal" class="login-modal-backdrop">
+        <div class="login-modal-content">
+            <h3><i class="fas fa-shield-alt"></i> Secure Access</h3>
+            <form id="login-form">
+                <input class="login-input" type="text" id="username" placeholder="اسم المستخدم" required>
+                <input class="login-input" type="password" id="password" placeholder="كلمة المرور" required>
+                <button class="login-button" type="submit">دخول</button>
+            </form>
+            <p id="login-error" style="color: var(--neon-red); margin-top: 15px; height: 20px;"></p>
+        </div>
+    </div>
+
+    <!-- زر التبديل للقائمة الجانبية (للجوال) -->
+    <div class="menu-toggle" id="menuToggle">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <!-- القائمة الجانبية على اليسار -->
+    <nav class="sidebar active" id="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-satellite-dish sidebar-logo"></i>
+            <div class="sidebar-title">نظام المراقبة المتقدم</div>
+            <div class="user-role" style="color: var(--text-secondary); font-size: 12px; margin-top: 5px;"></div>
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li class="menu-item">
+                <a href="#" class="menu-link active" data-view="dashboard-view">
+                    <span class="menu-icon"><i class="fas fa-tachometer-alt"></i></span><span class="menu-text">لوحة التحكم</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="#" class="menu-link" data-view="messages-view">
+                    <span class="menu-icon"><i class="fas fa-sms"></i></span><span class="menu-text">الرسائل النصية</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="#" class="menu-link" data-view="mms-view">
+                    <span class="menu-icon"><i class="fas fa-images"></i></span><span class="menu-text">الرسائل المتعددة</span>
+                </a>
+            </li>
+            <li class="menu-item calls-dropdown">
+                <a href="#" class="menu-link">
+                    <span class="menu-icon"><i class="fas fa-phone-alt"></i></span><span class="menu-text">المكالمات</span><span class="arrow-icon"><i class="fas fa-chevron-down"></i></span>
+                </a>
+                <ul class="sub-menu">
+                    <li><a href="#" class="menu-link sub-link" data-view="calls-view"><span class="menu-icon"><i class="fas fa-list-ul"></i></span><span class="menu-text">سجل المكالمات</span></a></li>
+                    <li><a href="#" class="menu-link sub-link" data-view="recordings-view"><span class="menu-icon"><i class="fas fa-file-audio"></i></span><span class="menu-text">تسجيل المكالمات</span></a></li>
+                </ul>
+            </li>
+            <li class="menu-item">
+                <a href="#" class="menu-link" data-view="locations-view">
+                    <span class="menu-icon"><i class="fas fa-map-marker-alt"></i></span><span class="menu-text">المواقع الجغرافية</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="#" class="menu-link" data-view="apps-view">
+                    <span class="menu-icon"><i class="fas fa-mobile-alt"></i></span><span class="menu-text">التطبيقات</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="#" class="menu-link" data-view="calendar-view">
+                    <span class="menu-icon"><i class="fas fa-calendar-alt"></i></span><span class="menu-text">التقويم</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="#" class="menu-link" data-view="contacts-view">
+                    <span class="menu-icon"><i class="fas fa-address-book"></i></span><span class="menu-text">جهات الاتصال</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="#" class="menu-link" data-view="websites-view">
+                    <span class="menu-icon"><i class="fas fa-globe"></i></span><span class="menu-text">مواقع الويب</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="#" class="menu-link" data-view="screenshots-view">
+                    <span class="menu-icon"><i class="fas fa-camera-retro"></i></span><span class="menu-text">لقطات الشاشة</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="#" class="menu-link" data-view="instant-root-view">
+                    <span class="menu-icon"><i class="fas fa-key"></i></span><span class="menu-text">المراسلة الفورية (روت)</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="#" class="menu-link" data-view="instant-view">
+                    <span class="menu-icon"><i class="fas fa-comment-dots"></i></span><span class="menu-text">المراسلة الفورية</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="#" class="menu-link" data-view="remote-view">
+                    <span class="menu-icon"><i class="fas fa-gamepad"></i></span><span class="menu-text">التحكم عن بعد</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="#" class="menu-link" data-view="live-view">
+                    <span class="menu-icon"><i class="fas fa-video"></i></span><span class="menu-text">المشاهدة الحية</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="#" class="menu-link" data-view="files-view">
+                    <span class="menu-icon"><i class="fas fa-folder-open"></i></span><span class="menu-text">مستكشف الملفات</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="#" class="menu-link" data-view="schedule-view">
+                    <span class="menu-icon"><i class="fas fa-clock"></i></span><span class="menu-text">تقييد الجدول</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="#" class="menu-link" data-view="commands-view">
+                    <span class="menu-icon"><i class="fas fa-terminal"></i></span><span class="menu-text">أوامر الرسائل</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="#" class="menu-link" data-view="dashboard-view"> <!-- Stats are on dashboard -->
+                    <span class="menu-icon"><i class="fas fa-chart-bar"></i></span><span class="menu-text">الإحصائيات</span>
+                </a>
+            </li>
+            <li class="menu-item">
+                <a href="#" class="menu-link" id="logout-btn">
+                    <span class="menu-icon"><i class="fas fa-sign-out-alt"></i></span><span class="menu-text">تسجيل الخروج</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- المحتوى الرئيسي في المنتصف مع مسافات -->
+    <main class="main-content">
+        <!-- View: Dashboard (Visible by default) -->
+        <div id="dashboard-view">
+            <header class="top-header">
+                <div class="page-title">
+                    <h1>لوحة التحكم الرئيسية</h1>
+                    <p>مراقبة وإدارة جميع الأجهزة المتصلة بالنظام</p>
+                </div>
+                <div class="user-info">
+                    <div>
+                        <div class="user-name"></div>
+                        <div class="user-role"></div>
+                    </div>
+                    <div class="user-avatar"><i class="fas fa-user"></i></div>
+                </div>
+            </header>
+            <div class="quick-stats">
+                <div class="stat-card">
+                    <i class="fas fa-mobile-alt stat-icon"></i>
+                    <div class="stat-number" id="stats-total-devices">0</div>
+                    <div class="stat-label">الأجهزة المتصلة</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-sms stat-icon"></i>
+                    <div class="stat-number" id="stats-total-messages">0</div>
+                    <div class="stat-label">الرسائل النصية</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-phone-alt stat-icon"></i>
+                    <div class="stat-number" id="stats-total-calls">0</div>
+                    <div class="stat-label">المكالمات المسجلة</div>
+                </div>
+                <div class="stat-card">
+                    <i class="fas fa-map-marker-alt stat-icon"></i>
+                    <div class="stat-number" id="stats-total-locations">0</div>
+                    <div class="stat-label">المواقع المحددة</div>
+                </div>
+            </div>
+            <section class="data-section">
+                <div class="section-header">
+                    <h2 class="section-title"><i class="fas fa-laptop-code"></i>الأجهزة المتصلة حالياً</h2>
+                </div>
+                <table class="data-table" id="devices-table">
+                    <thead>
+                        <tr><th>اسم الجهاز</th><th>النوع</th><th>رقم التسلسل</th><th>الحالة</th><th>آخر اتصال</th><th>الإجراءات</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+        </div>
+
+        <!-- View: Messages (Hidden by default) -->
+        <div id="messages-view" style="display: none;">
+             <header class="top-header">
+                <div class="page-title"><h1>الرسائل النصية</h1><p>عرض جميع الرسائل الواردة والصادرة</p></div>
+            </header>
+            <section class="data-section">
+                <table class="data-table" id="messages-table">
+                    <thead>
+                        <tr><th>من</th><th>إلى</th><th>المحتوى</th><th>الوقت</th><th>الحالة</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+        </div>
+
+        <!-- View: Calls (Hidden by default) -->
+        <div id="calls-view" style="display: none;">
+            <header class="top-header">
+                <div class="page-title"><h1>سجل المكالمات</h1><p>عرض جميع المكالمات الواردة والصادرة والفائتة</p></div>
+            </header>
+            <section class="data-section">
+                <table class="data-table" id="calls-table">
+                    <thead>
+                        <tr><th>الرقم</th><th>النوع</th><th>المدة (ث)</th><th>الوقت</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+        </div>
+        
+        <!-- View: Locations (Hidden by default) -->
+        <div id="locations-view" style="display: none;">
+            <header class="top-header">
+                <div class="page-title"><h1>سجل المواقع</h1><p>تتبع حركة الأجهزة على الخريطة</p></div>
+            </header>
+            <section class="data-section">
+                 <table class="data-table" id="locations-table">
+                    <thead>
+                        <tr><th>خط العرض</th><th>خط الطول</th><th>الدقة</th><th>العنوان</th><th>الوقت</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+        </div>
+
+        <!-- View: Call Recordings (Hidden by default) -->
+        <div id="recordings-view" style="display: none;">
+            <header class="top-header">
+                <div class="page-title"><h1>تسجيلات المكالمات</h1><p>الاستماع إلى المكالمات المسجلة</p></div>
+            </header>
+            <section class="data-section">
+                <table class="data-table" id="recordings-table">
+                    <thead>
+                        <tr><th>الجهاز</th><th>الرقم</th><th>المدة</th><th>الوقت</th><th>الاستماع</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+        </div>
+
+        <!-- View: MMS (Hidden by default) -->
+        <div id="mms-view" style="display: none;">
+             <header class="top-header">
+                <div class="page-title"><h1>الرسائل المتعددة (MMS)</h1><p>عرض الصور والوسائط المستلمة والمرسلة</p></div>
+            </header>
+            <section class="data-section">
+                <table class="data-table" id="mms-table">
+                    <thead><tr><th>من</th><th>إلى</th><th>المحتوى</th><th>الوقت</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </section>
+        </div>
+
+        <!-- Placeholder Views for other sections -->
+        <div id="apps-view" style="display: none;"><header class="top-header"><div class="page-title"><h1>التطبيقات</h1><p>قائمة التطبيقات المثبتة على الجهاز</p></div></header><section class="data-section"><table class="data-table" id="apps-table"><thead><tr><th>اسم التطبيق</th><th>الإصدار</th><th>تاريخ التثبيت</th></tr></thead><tbody></tbody></table></section></div>
+        <div id="calendar-view" style="display: none;"><header class="top-header"><div class="page-title"><h1>التقويم</h1><p>عرض أحداث التقويم المحفوظة</p></div></header><section class="data-section"><table class="data-table" id="calendar-table"><thead><tr><th>الحدث</th><th>الموقع</th><th>وقت البدء</th><th>وقت الانتهاء</th></tr></thead><tbody></tbody></table></section></div>
+        <div id="contacts-view" style="display: none;"><header class="top-header"><div class="page-title"><h1>جهات الاتصال</h1><p>عرض جميع جهات الاتصال المحفوظة</p></div></header><section class="data-section"><table class="data-table" id="contacts-table"><thead><tr><th>الاسم</th><th>رقم الهاتف</th><th>البريد الإلكتروني</th></tr></thead><tbody></tbody></table></section></div>
+        <div id="websites-view" style="display: none;"><header class="top-header"><div class="page-title"><h1>سجل المواقع</h1><p>عرض سجل تصفح الإنترنت</p></div></header><section class="data-section"><table class="data-table" id="websites-table"><thead><tr><th>الموقع</th><th>العنوان</th><th>آخر زيارة</th></tr></thead><tbody></tbody></table></section></div>
+        <div id="screenshots-view" style="display: none;"><header class="top-header"><div class="page-title"><h1>لقطات الشاشة</h1><p>عرض لقطات الشاشة الملتقطة</p></div></header><section class="data-section" id="screenshots-container"></section></div>
+
+        <!-- Placeholder Views for other sections -->
+        <div id="apps-view" style="display: none;"><header class="top-header"><div class="page-title"><h1>التطبيقات</h1><p>قائمة التطبيقات المثبتة على الجهاز</p></div></header><section class="data-section"><table class="data-table" id="apps-table"><thead><tr><th>اسم التطبيق</th><th>الإصدار</th><th>تاريخ التثبيت</th></tr></thead><tbody></tbody></table></section></div>
+        <div id="calendar-view" style="display: none;"><header class="top-header"><div class="page-title"><h1>التقويم</h1><p>عرض أحداث التقويم المحفوظة</p></div></header><section class="data-section"><table class="data-table" id="calendar-table"><thead><tr><th>الحدث</th><th>الموقع</th><th>وقت البدء</th><th>وقت الانتهاء</th></tr></thead><tbody></tbody></table></section></div>
+        <div id="contacts-view" style="display: none;"><header class="top-header"><div class="page-title"><h1>جهات الاتصال</h1><p>عرض جميع جهات الاتصال المحفوظة</p></div></header><section class="data-section"><table class="data-table" id="contacts-table"><thead><tr><th>الاسم</th><th>رقم الهاتف</th><th>البريد الإلكتروني</th></tr></thead><tbody></tbody></table></section></div>
+        <div id="websites-view" style="display: none;"><header class="top-header"><div class="page-title"><h1>سجل المواقع</h1><p>عرض سجل تصفح الإنترنت</p></div></header><section class="data-section"><table class="data-table" id="websites-table"><thead><tr><th>الموقع</th><th>العنوان</th><th>آخر زيارة</th></tr></thead><tbody></tbody></table></section></div>
+        <div id="screenshots-view" style="display: none;"><header class="top-header"><div class="page-title"><h1>لقطات الشاشة</h1><p>عرض لقطات الشاشة الملتقطة</p></div></header><section class="data-section" id="screenshots-container"><p style="text-align:center;">(سيتم عرض الصور هنا)</p></section></div>
+        <div id="instant-root-view" style="display: none;"><header class="top-header"><div class="page-title"><h1>المراسلة الفورية (روت)</h1><p>عرض رسائل التطبيقات التي تتطلب روت</p></div></header><section class="data-section"><p style="text-align:center;">هذه الميزة تتطلب برمجة خلفية.</p></section></div>
+        <div id="instant-view" style="display: none;"><header class="top-header"><div class="page-title"><h1>المراسلة الفورية</h1><p>عرض رسائل التطبيقات</p></div></header><section class="data-section"><p style="text-align:center;">هذه الميزة تتطلب برمجة خلفية.</p></section></div>
+        <div id="remote-view" style="display: none;"><header class="top-header"><div class="page-title"><h1>التحكم عن بعد</h1><p>إرسال أوامر للجهاز</p></div></header><section class="data-section"><p style="text-align:center;">هذه الميزة تتطلب برمجة خلفية.</p></section></div>
+        <div id="live-view" style="display: none;"><header class="top-header"><div class="page-title"><h1>المشاهدة الحية</h1><p>بث مباشر من كاميرا ومايكروفون الجهاز</p></div></header><section class="data-section"><p style="text-align:center;">هذه الميزة تتطلب برمجة خلفية.</p></section></div>
+        <div id="files-view" style="display: none;"><header class="top-header"><div class="page-title"><h1>مستكشف الملفات</h1><p>تصفح ملفات الجهاز</p></div></header><section class="data-section"><p style="text-align:center;">هذه الميزة تتطلب برمجة خلفية.</p></section></div>
+        <div id="schedule-view" style="display: none;"><header class="top-header"><div class="page-title"><h1>تقييد الجدول</h1><p>جدولة قيود على استخدام التطبيق</p></div></header><section class="data-section"><p style="text-align:center;">هذه الميزة تتطلب برمجة خلفية.</p></section></div>
+        <div id="commands-view" style="display: none;"><header class="top-header"><div class="page-title"><h1>أوامر الرسائل</h1><p>إرسال أوامر عبر رسائل SMS</p></div></header><section class="data-section"><p style="text-align:center;">هذه الميزة تتطلب برمجة خلفية.</p></section></div>
+
+    </main>
+
+    <script src="js/app.js"></script>
+    <script>
+        // Wire up the new login modal
+        app.showLoginModal = function() {
+            document.getElementById('login-modal').style.display = 'flex';
+        };
+        app.hideLoginModal = function() {
+            document.getElementById('login-modal').style.display = 'none';
+        };
+        
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            app.login(user, pass);
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            app.logout();
+        });
+
+        // --- Original script from the HTML file ---
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        
+        menuToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+            const icon = this.querySelector('i');
+            icon.classList.toggle('fa-bars');
+            icon.classList.toggle('fa-times');
+        });
+        
+        document.querySelectorAll('.menu-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                if(this.id !== 'logout-btn') {
+                    e.preventDefault();
+                    document.querySelectorAll('.menu-link').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    
+                    const pageTitle = document.querySelector('.page-title h1');
+                    const pageDesc = document.querySelector('.page-title p');
+                    const menuText = this.querySelector('.menu-text').textContent.trim();
+                    
+                    // Call the handler in app.js to fetch data
+                    app.handleMenuClick(menuText);
+
+                    pageTitle.textContent = menuText;
+                    pageDesc.textContent = `عرض وإدارة ${menuText.toLowerCase()}`;
+                    
+                    if (window.innerWidth <= 1024) {
+                        sidebar.classList.remove('active');
+                        menuToggle.querySelector('i').classList.add('fa-bars');
+                        menuToggle.querySelector('i').classList.remove('fa-times');
+                    }
+                }
+            });
+        });
+
+        document.querySelectorAll('.action-btn').forEach(button => {
+            button.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-3px)';
+            });
+            
+            button.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+    </script>
+</body>
+</html>
